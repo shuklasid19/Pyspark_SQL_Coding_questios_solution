@@ -48,3 +48,43 @@ select player_name,gender,score_points, sum(score_points)
   as cumulative_score 
   from players_scores 
   order by gender, day;
+
+
+
+from pyspark.sql import SparkSession
+from pyspark.sql.types import StructType, StructField, StringType, IntegerType, DateType
+
+# Initialize Spark session
+spark = SparkSession.builder.master("local").appName("ScoresData").getOrCreate()
+
+# Define schema for the DataFrame
+schema = StructType([
+    StructField("player_name", StringType(), True),
+    StructField("gender", StringType(), True),
+    StructField("day", StringType(), True),
+    StructField("score_points", IntegerType(), True)
+])
+
+# Create data for the DataFrame
+data = [
+    ("Aron", "F", "2020-01-01", 17),
+    ("Alice", "F", "2020-01-07", 23),
+    ("Bajrang", "M", "2020-01-07", 7),
+    ("Khali", "M", "2019-12-25", 11),
+    ("Slaman", "M", "2019-12-30", 13),
+    ("Joe", "M", "2019-12-31", 3),
+    ("Jose", "M", "2019-12-18", 2),
+    ("Priya", "F", "2019-12-31", 23),
+    ("Priyanka", "F", "2019-12-30", 17)
+]
+
+# Create DataFrame
+df = spark.createDataFrame(data, schema=schema)
+
+
+from pyspark.sql import *
+from pyspark.sql.functions import *
+
+window_spec = Window.partitionBy("gender").orderBy("day").rowsBetween(Window.unboundedPreceding, Window.currentRow)
+final_df = df.withColumn("values", sum("score_points").over(window_spec))
+final_df.display()
