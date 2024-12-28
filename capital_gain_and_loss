@@ -84,3 +84,4 @@ sell_df = stocks_df.filter(col("operation")=="Sell").groupBy("stock_name","opera
 join_df = buy_df.join(sell_df, on="stock_name", how="outer")
 join_df.withColumn("capital_gain_loss", col("sell_price")-col("buy_price")).select("stock_name","capital_gain_loss").display()
 
+https://leetcode.com/problems/capital-gainloss/
